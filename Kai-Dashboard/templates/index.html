@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechDay - Feedback Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F8F9FA;
+            --card-bg-color: #FFFFFF;
+            --primary-text-color: #212529;
+            --secondary-text-color: #6c757d;
+            --brand-purple: #7B28FF;
+            --brand-purple-dark: #2A2A72;
+            --card-shadow: 0 8px 30px rgba(123, 40, 255, 0.08);
+            --border-color: #e9ecef;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .background-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(300deg, #e6d9ff, #d9e8ff, #faddff);
+            background-size: 200% 200%;
+            animation: gradient-animation 20s ease infinite;
+        }
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .decorative-element {
+            position: fixed;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: auto;
+            opacity: 0.5;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header-container { position: relative; padding-top: 20px; margin-bottom: 2.5rem; }
+        .header-buttons { position: absolute; top: 20px; right: 0; display: flex; align-items: center; gap: 12px; }
+
+        h1 { 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            text-align: center;
+            font-size: 3rem; 
+            font-weight: 700; 
+            color: var(--brand-purple); 
+            margin: 0;
+        }
+
+        .title-icon {
+            width: 32px;
+            height: auto;
+            color: var(--brand-purple-dark);
+        }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+        .column { background: var(--card-bg-color); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .column:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(123, 40, 255, 0.12); }
+        .column h2 { font-size: 1.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); color: var(--primary-text-color); font-weight: 600; }
+        .feedback-list { max-height: 600px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--brand-purple) var(--border-color); }
+        .feedback-list::-webkit-scrollbar { width: 6px; }
+        .feedback-list::-webkit-scrollbar-track { background: var(--border-color); border-radius: 3px; }
+        .feedback-list::-webkit-scrollbar-thumb { background: var(--brand-purple); border-radius: 3px; }
+        .feedback-item { display: flex; justify-content: space-between; align-items: center; background: #F1F3F5; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid var(--brand-purple); font-weight: 400; transition: transform 0.2s ease; }
+        .feedback-item:hover { transform: scale(1.02); }
+        .feedback-count { background-color: var(--brand-purple); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; margin-left: 10px; }
+        .empty-state { text-align: center; color: var(--secondary-text-color); font-style: italic; padding: 2rem; }
+        .status-indicator { position: relative; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; transition: all 0.3s ease; border: 1px solid transparent; }
+        .status-indicator.connected { background-color: #e6f7ec; color: #1d9a5b; border-color: #b7e9c9; }
+        .status-indicator.error { background-color: #fee2e2; color: #dc2626; border-color: #fecaca; }
+        #clearDashboardBtn { display: block; margin: 2rem auto 0 auto; padding: 0.5rem 1rem; font-size: 0.8rem; font-family: 'Manrope', sans-serif; font-weight: 600; color: #FFFFFF; background-color: var(--brand-purple); border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(123, 40, 255, 0.2); }
+        #clearDashboardBtn:hover { background-color: #6a1de6; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(123, 40, 255, 0.3); }
+        .marquee-container { position: fixed; bottom: 5%; left: 0; width: 100%; z-index: -1; overflow: hidden; pointer-events: none; }
+        .marquee-text {
+            white-space: nowrap;
+            font-size: 110px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: transparent; 
+            -webkit-text-stroke: 1px rgba(123, 40, 255, 0.5);
+            text-stroke: 1px rgba(123, 40, 255, 0.5);
+            animation: scroll-left 15s linear infinite;
+        }
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        @media (max-width: 768px) {
+            .decorative-element { display: none; }
+            body { padding: 10px; }
+            .header-container { display: flex; flex-direction: column; align-items: center; gap: 16px; padding-top: 10px; }
+            .header-buttons { position: relative; top: auto; right: auto; flex-direction: row; width: 100%; justify-content: center; }
+            h1 { font-size: 2.5rem; }
+            .title-icon { width: 24px; }
+            .dashboard { grid-template-columns: 1fr; gap: 1rem; }
+            .column { padding: 1rem; }
+            .marquee-text { font-size: 60px; }
+            .marquee-container { bottom: 20%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-gradient"></div>
+
+    <div class="marquee-container">
+        <p class="marquee-text">CX TECH • CX TECH • CX TECH • CX TECH • CX TECH • CX TECH • </p>
+    </div>
+
+    <div class="container">
+        <div class="header-container">
+            <h1>
+                <svg class="title-icon" viewBox="0 0 40 164" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="20" y1="4.37114e-08" x2="20" y2="124" stroke="currentColor" stroke-width="2"/>
+                    <line x1="5.17157" y1="138.172" x2="34.8284" y2="167.828" stroke="currentColor" stroke-width="2"/>
+                    <line x1="5.17157" y1="167.828" x2="34.8284" y2="138.172" stroke="currentColor" stroke-width="2"/>
+                    <line x1="20" y1="130" x2="20" y2="176" stroke="currentColor" stroke-width="2"/>
+                    <line x1="0" y1="153" x2="40" y2="153" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span>TechDay</span>
+            </h1>
+            <div class="header-buttons">
+                <div class="status-indicator" id="statusIndicator">Conectando...</div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="column">
+                <h2>¿Cómo la estan pasando?</h2>
+                <div class="feedback-list" id="presentacionFeedback">
+                    <div class="empty-state">No hay feedback disponible aún</div>
+                </div>
+            </div>
+
+            <div class="column">
+                <h2>Opinión sobre los Proyectos del Alpha Tech</h2>
+                <div class="feedback-list" id="proyectoFeedback">
+                    <div class="empty-state">No hay feedback disponible aún</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="clearDashboardBtn">Limpiar Dashboard</button>
+    </div>
+
+    <script>
+        const presentacionContainer = document.getElementById('presentacionFeedback');
+        const proyectoContainer = document.getElementById('proyectoFeedback');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const clearBtn = document.getElementById('clearDashboardBtn');
+        function updateStatus(connected, message = '') { if (connected) { statusIndicator.textContent = 'Conectado'; statusIndicator.className = 'status-indicator connected'; } else { statusIndicator.textContent = message || 'Error de conexión'; statusIndicator.className = 'status-indicator error'; } }
+        function createFeedbackElement(text, count) { const div = document.createElement('div'); div.className = 'feedback-item'; const textSpan = document.createElement('span'); textSpan.textContent = text; const countSpan = document.createElement('span'); countSpan.className = 'feedback-count'; countSpan.textContent = count; div.appendChild(textSpan); div.appendChild(countSpan); return div; }
+        function updateFeedbackDisplay(summaryData) { presentacionContainer.innerHTML = ''; proyectoContainer.innerHTML = ''; const presentacionItems = Object.entries(summaryData.presentacion || {}); const proyectoItems = Object.entries(summaryData.proyectos || {}); if (presentacionItems.length === 0) { presentacionContainer.innerHTML = '<div class="empty-state">No hay feedback disponible aún</div>'; } else { presentacionItems.sort((a, b) => b[1] - a[1]).forEach(([text, count]) => { const element = createFeedbackElement(text, count); presentacionContainer.appendChild(element); }); } if (proyectoItems.length === 0) { proyectoContainer.innerHTML = '<div class="empty-state">No hay feedback disponible aún</div>'; } else { proyectoItems.sort((a, b) => b[1] - a[1]).forEach(([text, count]) => { const element = createFeedbackElement(text, count); proyectoContainer.appendChild(element); }); } }
+        async function fetchFeedback() { try { const response = await fetch('/get-feedback'); if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); const data = await response.json(); updateFeedbackDisplay(data); updateStatus(true); } catch (error) { console.error('Error fetching feedback:', error); updateStatus(false, 'Error al obtener datos'); } }
+        async function clearDashboard() { if (confirm('¿Estás seguro de que quieres limpiar el feedback?')) { try { const response = await fetch('/clear-feedback', { method: 'POST' }); if (!response.ok) throw new Error('No se pudo limpiar el dashboard'); await fetchFeedback(); } catch (error) { console.error('Error al limpiar el dashboard:', error); updateStatus(false, 'Error al limpiar'); } } }
+        function init() { fetchFeedback(); setInterval(fetchFeedback, 3000); clearBtn.addEventListener('click', clearDashboard); }
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
